@@ -14,7 +14,7 @@ query_params = {"city": ["Berlin"], "apikey": API_KEY}
 
 @pytest.fixture
 def api():
-    api = TicketmasterApi(query_params)
+    api = TicketmasterApi(api_key=API_KEY, query_params=query_params)
     return api
 
 
@@ -42,7 +42,7 @@ def test_get_events(api):
     start_date = parse(datetime_range[0])
     end_date = parse(datetime_range[1])
 
-    events = api.get_events((start_date, end_date))
+    events = api.get_events(start_date, end_date)
 
     assert type(events) == list
 
