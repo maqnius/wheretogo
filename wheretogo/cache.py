@@ -48,7 +48,7 @@ class Cache:
                 self._del(item)
                 raise KeyError()
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key, value) -> None:
         self._set(key, value, time.time())
 
     def _del(self, item) -> None:
@@ -99,7 +99,7 @@ class SimpleCache(Cache):
     def _get(self, item):
         return self._cache[item]
 
-    def _set(self, item, value, timestamp):
+    def _set(self, item, value, timestamp) -> None:
         self._cache[item] = (value, timestamp)
 
     def _del(self, item) -> None:
