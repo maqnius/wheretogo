@@ -1,9 +1,26 @@
-class AppointmentFilter:
+"""
+This module contains valid filter functions for the :meth:`wheretogo.api.Api.get_events`
+method.
+
+
+"""
+
+
+class FilterFunction:
+    """FilterFunction base class"""
+    def __call__(self, events, *args, **kwargs):
+        raise NotImplementedError
+
+
+class TicketmasterAppointmentFilter(FilterFunction):
     """
+    Example filter function
+
     Filters events by checking if they overlap
     with any appointment.
 
     """
+
     def __init__(self, appointments):
         """
 
@@ -29,11 +46,12 @@ class AppointmentFilter:
                 .. code-block::javascript
 
                     "start":  {
-                        "localDate": "2016-03-06",
-                        "dateTBD": false,
-                        "dateTBA": false,
-                        "timeTBA": true,
-                        "noSpecificTime": false
+                        "dateTime": "2019-11-01T17:30:00Z",
+                        ...
+                    },
+                    "end":  {
+                        "dateTime": "2019-11-01T18:30:00Z",
+                        ...
                     }
 
         :return list filtered_events: List of all events that do not overlap

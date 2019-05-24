@@ -14,14 +14,15 @@ class Api:
     def __init__(self, cache=None):
         self._cache = cache
 
-    def get_events(self, date_range, date_filter=None, *args, **kwargs):
+    def get_events(self, date_range, date_filter=None, *args, **kwargs) -> list:
         """
         Return list of Events during a period using cached requests
 
         :param date_range: Only events after this date
         :type date_range: (str|datetime.datetime, str|datetime.datetime)
         :param date_filter: List of filter functions or a single filter function that are applied on the query result
-        :type date_filter: [callable] or callable
+        :type date_filter: [:class:`wheretogo.datefilter.FilterFunction`]
+            | :class:`wheretogo.datefilter.FilterFunction`
         :return: Events
         :rtype: list
         """
@@ -76,7 +77,7 @@ class TicketmasterApi(Api):
         super().__init__(cache)
         self.api_key = api_key
 
-    def _request_get_events(self, start_date, end_date, *args, **kwargs):
+    def _request_get_events(self, start_date, end_date, *args, **kwargs) -> list:
         params = kwargs
         params["apikey"] = self.api_key
 

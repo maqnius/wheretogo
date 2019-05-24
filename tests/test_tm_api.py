@@ -3,7 +3,7 @@ import pytest
 import os
 from tests.config import API_KEY
 from wheretogo.api import TicketmasterApi
-from wheretogo.datefilter import AppointmentFilter
+from wheretogo.datefilter import TicketmasterAppointmentFilter
 from wheretogo.cache import DictionaryCache
 
 ROOT_URL = "https://app.ticketmaster.com/discovery/v2/"
@@ -11,6 +11,57 @@ ROOT_URL = "https://app.ticketmaster.com/discovery/v2/"
 datetime_range = ('2019-05-22T00:00:00Z', '2019-05-23T00:00:00Z')
 appointments = [('2019-05-16T12:00:00Z', '2019-05-16T14:00:00Z'), ('2019-05-17T19:00:00Z', '2019-05-17T21:00:00Z')]
 query_params = {"city": ["Berlin"], "apikey": API_KEY}
+
+test_events = [
+    {
+        "name": "EventA",  # Conflicts with first appointment (ends too late)
+        "dates": {
+            "start": {
+                "dateTime": "2019-05-16T11:30:00Z",
+            },
+            "end": {
+                "dateTime": "2019-05-16T13:30:00Z",
+            }
+        }
+
+    },
+    {
+        "name": "EventB",  # Conflicts with first appointment (starts too early)
+        "dates": {
+            "start": {
+                "dateTime": "2019-05-16T13:00:00Z",
+            },
+            "end": {
+                "dateTime": "2019-05-16T14:30:00Z",
+            }
+        }
+
+    },
+    {
+        "name": "EventC",  # No conflict
+        "dates": {
+            "start": {
+                "dateTime": "2019-05-16T14:10:00Z",
+            },
+            "end": {
+                "dateTime": "2019-05-16T14:30:00Z",
+            }
+        }
+
+    },
+    {
+        "name": "EventD",  # Conflicts with last appointment
+        "dates": {
+            "start": {
+                "dateTime": "2019-05-17T19:30:00Z",
+            },
+            "end": {
+                "dateTime": "2019-05-17T20:00:00Z",
+            }
+        }
+
+    }
+]
 
 
 @pytest.fixture
@@ -56,7 +107,7 @@ def test_get_event_range(cached_api):
     """
     Test if filtering of the events works
     """
-    appointment_filter = AppointmentFilter(appointments)
+    appointment_filter = TicketmasterAppointmentFilter(appointments)
 
     filtered_events = cached_api.get_events(datetime_range, date_filter=appointment_filter, city=query_params["city"])
 
@@ -65,3 +116,12 @@ def test_get_event_range(cached_api):
     events = cached_api.get_events(datetime_range, city=query_params["city"])
 
     assert len(events) >= len(filtered_events)
+
+
+def test_appointment_filter():
+    appointment_filter = TicketmasterAppointmentFilter(appointments)
+
+    filtered_events = appointment_filter(test_events)
+
+    assert len(filtered_events) == 1
+    assert filtered_events[0]["name"] == "EventC"
