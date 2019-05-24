@@ -1,4 +1,6 @@
-from wheretogo.datefilter import TicketmasterAppointmentFilter
+import pytest
+from pytz import UnknownTimeZoneError
+from wheretogo.datefilter import TicketmasterAppointmentFilter, FilterFunction
 
 appointments = [('2019-05-16T12:00:00Z', '2019-05-16T14:00:00Z'), ('2019-05-17T19:00:00Z', '2019-05-17T21:00:00Z')]
 
@@ -52,6 +54,27 @@ test_events = [
 
     }
 ]
+
+
+def test_filter_class():
+    f = FilterFunction()
+
+    with pytest.raises(NotImplementedError):
+        f({})
+
+
+def test_extract_time():
+    f = TicketmasterAppointmentFilter(appointments)
+
+    with pytest.raises(ValueError):
+        f._extract_date({}, "")
+
+    with pytest.raises(ValueError):  # Provoking Timezone parsing to crash
+        f._extract_date({"localDate": "2019-01-01"}, "")
+
+    date = f._extract_date({"localDate": "2019-01-01"}, "Europe/Berlin")
+
+    assert date.isoformat() == "2019-01-01T00:00:00+00:53"
 
 
 def test_appointment_filter():

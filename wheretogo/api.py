@@ -95,7 +95,4 @@ class TicketmasterApi(Api):
         :return: List of events
         :rtype: list
         """
-        try:
-            return res["_embedded"]["events"]
-        except KeyError:
-            return []
+        return res["_embedded"]["events"]

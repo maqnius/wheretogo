@@ -6,6 +6,7 @@ method.
 """
 import datetime
 import logging
+import pytz
 from dateutil.parser import parse
 
 logger = logging.getLogger(__name__)
@@ -82,17 +83,7 @@ class TicketmasterAppointmentFilter(FilterFunction):
         :param event: See `:meth:.__call__`
 
         """
-        try:
-            start_event = self._extract_time(event["dates"]["start"])
-        except ValueError:
-            return False
-
-        try:
-            end_event = self._extract_time(event["dates"]["end"])
-        except ValueError:
-            return False
-        except KeyError:
-            end_event = None
+        start_event, end_event = self._extract_date_rage(event["dates"])
 
         for start_appointment, end_appointment in self.appointments:
             # Check if event is completely **after** appointment
@@ -105,13 +96,22 @@ class TicketmasterAppointmentFilter(FilterFunction):
             if end_event is None or not end_event < start_appointment:
                 before = False
 
-            if not (after or before):     # Overlaps
+            if not (after or before):  # Overlaps
                 return True
 
         return False
 
+    def _extract_date_rage(self, event_date: dict) -> (datetime.datetime, datetime.datetime):
+        start_event = self._extract_date(event_date["start"], event_date.get("timezone", ""))
+        try:
+            end_event = self._extract_date(event_date["end"], event_date.get("timezone", ""))
+        except KeyError:
+            end_event = None
+
+        return start_event, end_event
+
     @staticmethod
-    def _extract_time(event_date: dict) -> datetime.datetime:
+    def _extract_date(event_date: dict, timezone: str) -> datetime.datetime:
         """
         Evaluates an Ticketmaster Event date field.
         If this is not possible, a ValueError is raised.
@@ -121,11 +121,23 @@ class TicketmasterAppointmentFilter(FilterFunction):
         TODO: Implement more possibilities of date extractions
 
         """
+        # Look for iso timestamp
         try:
             return parse(event_date["dateTime"])
         except KeyError:
             logger.debug("Not dateTime field found.")
             pass
 
-        logger.debug("Could not extract time from {}".format(event_date))
-        raise ValueError  # Could not Extract
+        # Try with local time
+        try:
+            date = parse(event_date["localDate"])
+        except KeyError:
+            logger.debug("Not localDate field found.")
+            pass
+        else:
+            try:
+                return date.replace(tzinfo=pytz.timezone(timezone))
+            except pytz.UnknownTimeZoneError:
+                pass
+
+        raise ValueError("Could not extract time from {}".format(event_date))  # Could not Extract

@@ -1,7 +1,21 @@
 import pytest
 import time
 from time import sleep
-from wheretogo.cache import DictionaryCache
+from wheretogo.cache import DictionaryCache, Cache
+
+
+def test_cache_class():
+    cache = Cache()
+
+    with pytest.raises(NotImplementedError):
+        foo = cache._get("foo")
+
+    with pytest.raises(NotImplementedError):
+        foo = cache._set("foo", "bar", time.time())
+
+    with pytest.raises(NotImplementedError):
+        foo = cache._del("foo")
+
 
 
 def test_cache_w_timeout():
