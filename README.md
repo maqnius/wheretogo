@@ -44,6 +44,9 @@ for event in events:
     print(event["name"])
 
 ```
+```
+>>> 1. Boylesque Drag Festival Berlin
+```
 
 ## Developer Interface
 The main function that this packages provides to the outer world is `Api.get_events`, which
