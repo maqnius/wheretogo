@@ -17,6 +17,13 @@ class FilterFunction:
     """FilterFunction base class"""
 
     def __call__(self, events: [dict], *args, **kwargs) -> [dict]:
+        return [e for e in events if self._filter(e)]
+
+    def _filter(self, event):
+        """
+        :param event:
+        :return: True if event gets past the filter, False else
+        """
         raise NotImplementedError
 
 
@@ -47,8 +54,9 @@ class TicketmasterAppointmentFilter(FilterFunction):
 
             self.appointments.append((start, end))
 
-    def __call__(self, events: [dict], *args, **kwargs) -> [dict]:
+    def _filter(self, event: dict) -> bool:
         """
+        Checks if a single event does not overlap with any of the appointments
 
         :param list events: List of dictionaries. Each dictionary represents an
             Event and contains at least the following fields:
@@ -70,18 +78,7 @@ class TicketmasterAppointmentFilter(FilterFunction):
                         ...
                     }
 
-        :return list filtered_events: List of all events that do not overlap
-            with any appointment.
-
-        """
-        return [e for e in events if not self._overlaps(e)]
-
-    def _overlaps(self, event: dict) -> bool:
-        """
-        Checks if a single event overlaps with any of the appointments
-
-        :param event: See `:meth:.__call__`
-
+        :returns: True if it does not overlap, False else
         """
         start_event, end_event = self._extract_date_rage(event["dates"])
 
@@ -97,9 +94,9 @@ class TicketmasterAppointmentFilter(FilterFunction):
                 before = False
 
             if not (after or before):  # Overlaps
-                return True
+                return False
 
-        return False
+        return True
 
     def _extract_date_rage(self, event_date: dict) -> (datetime.datetime, datetime.datetime):
         """Creates a (start_date, end_date) tuple from the event's date information"""

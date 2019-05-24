@@ -60,7 +60,7 @@ def test_filter_class():
     f = FilterFunction()
 
     with pytest.raises(NotImplementedError):
-        f({})
+        f._filter({})
 
 
 def test_extract_time():
