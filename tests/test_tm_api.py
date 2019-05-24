@@ -1,15 +1,18 @@
 import requests
 import pytest
 import os
+import datetime
 from tests.config import API_KEY
 from wheretogo.api import TicketmasterApi
 from wheretogo.datefilter import TicketmasterAppointmentFilter
 from wheretogo.cache import DictionaryCache
 
 ROOT_URL = "https://app.ticketmaster.com/discovery/v2/"
+today = datetime.datetime.today()
+tomorrow = today + datetime.timedelta(days=1)
 
-datetime_range = ('2019-05-22T00:00:00Z', '2019-05-23T00:00:00Z')
-appointments = [('2019-05-16T12:00:00Z', '2019-05-16T14:00:00Z'), ('2019-05-17T19:00:00Z', '2019-05-17T21:00:00Z')]
+datetime_range = (today.isoformat(timespec="seconds") + "Z", tomorrow.isoformat(timespec="seconds") + "Z")
+appointments = [('2019-05-22T12:00:00Z', '2019-05-22T14:00:00Z'), ('2019-05-22T19:00:00Z', '2019-05-22T21:00:00Z')]
 query_params = {"city": ["Berlin"], "apikey": API_KEY}
 
 
@@ -50,12 +53,19 @@ def test_get_events(api):
     events = api.get_events(datetime_range, city=query_params["city"])
 
     assert type(events) == list
+    assert len(events) > 0
 
 
 def test_get_event_range(cached_api):
     """
     Test if filtering of the events works
     """
+    # make appointment over whole timespan
+    long_appointment = TicketmasterAppointmentFilter([datetime_range])
+    filtered_events = cached_api.get_events(datetime_range, date_filter=long_appointment, city=query_params["city"])
+
+    assert len(filtered_events) == 0
+
     appointment_filter = TicketmasterAppointmentFilter(appointments)
 
     filtered_events = cached_api.get_events(datetime_range, date_filter=appointment_filter, city=query_params["city"])

@@ -74,7 +74,7 @@ class Api:
     @staticmethod
     def _generate_cache_key(start_date, end_date, *args, **kwargs):
         params = ["{}={}".format(name, value) for name, value in kwargs.items()]
-        return (start_date, end_date, *args, *params)
+        return (start_date.isoformat(), end_date.isoformat(), *args, *params)
 
     def _request_get_events(self, start_date: datetime.datetime, end_date: datetime.datetime, *args, **kwargs):
         """
@@ -109,9 +109,16 @@ class TicketmasterApi(Api):
         self.api_key = api_key
 
     def _request_get_events(self, start_date, end_date, *args, **kwargs):
-        """See :meth:`.api._requests_get_events`. """
+        """
+        See :meth:`.api._requests_get_events`.
+
+        TODO: Result is paginated. Fetch information of all pages.
+
+        """
         params = kwargs
         params["apikey"] = self.api_key
+        params["startDateTime"] = start_date.isoformat(timespec="seconds")
+        params["endDateTime"] = end_date.isoformat(timespec="seconds")
 
         r = requests.get(os.path.join(self.base_url, 'events.json'), params=params)
         r.raise_for_status()
@@ -127,4 +134,7 @@ class TicketmasterApi(Api):
         :return: List of events
         :rtype: list
         """
-        return res["_embedded"]["events"]
+        try:
+            return res["_embedded"]["events"]
+        except KeyError:
+            return []

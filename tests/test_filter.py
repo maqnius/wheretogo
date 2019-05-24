@@ -84,3 +84,9 @@ def test_appointment_filter():
 
     assert len(filtered_events) == 1
     assert filtered_events[0]["name"] == "EventC"
+
+    # Cover all Events
+    appointment_filter = TicketmasterAppointmentFilter([("2019-05-15T11:30:00Z", "2019-05-18T13:30:00Z")])
+    filtered_events = appointment_filter(test_events)
+
+    assert len(filtered_events) == 0
