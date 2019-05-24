@@ -1,7 +1,7 @@
 import pytest
 import time
 from time import sleep
-from wheretogo.cache import SimpleCache
+from wheretogo.cache import DictionaryCache
 
 
 def test_cache_w_timeout():
@@ -9,7 +9,7 @@ def test_cache_w_timeout():
     Test creation of values and
     if timout makes the content invalid
     """
-    w_timeout = SimpleCache(timeout=1)
+    w_timeout = DictionaryCache(timeout=1)
     w_timeout["foo"] = "bar"
 
     assert w_timeout["foo"] == "bar"
@@ -27,7 +27,7 @@ def test_cache_without_timeout():
     Test creation of values and
     if timout makes the content invalid
     """
-    w_timeout = SimpleCache()
+    w_timeout = DictionaryCache()
     w_timeout["foo"] = "bar"
 
     assert w_timeout["foo"] == "bar"

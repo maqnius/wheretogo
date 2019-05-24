@@ -1,9 +1,10 @@
 import requests
 import pytest
 import os
-from dateutil.parser import parse
 from tests.config import API_KEY
-from wheretogo.api import TicketmasterApi, EventRange
+from wheretogo.api import TicketmasterApi
+from wheretogo.datefilter import AppointmentFilter
+from wheretogo.cache import DictionaryCache
 
 ROOT_URL = "https://app.ticketmaster.com/discovery/v2/"
 
@@ -14,7 +15,13 @@ query_params = {"city": ["Berlin"], "apikey": API_KEY}
 
 @pytest.fixture
 def api():
-    api = TicketmasterApi(api_key=API_KEY, query_params=query_params)
+    api = TicketmasterApi(api_key=API_KEY)
+    return api
+
+
+@pytest.fixture
+def cached_api():
+    api = TicketmasterApi(api_key=API_KEY, cache=DictionaryCache())
     return api
 
 
@@ -39,26 +46,22 @@ def test_get_events(api):
     it would mean reproducing the code of the module.
 
     """
-    start_date = parse(datetime_range[0])
-    end_date = parse(datetime_range[1])
 
-    events = api.get_events(start_date, end_date)
+    events = api.get_events(datetime_range, city=query_params["city"])
 
     assert type(events) == list
 
 
-def test_get_event_range(api):
+def test_get_event_range(cached_api):
     """
     Test if filtering of the events works
     """
-    wtgo = EventRange(api=api)
-    event_range = wtgo(datetime_range, appointments)
+    appointment_filter = AppointmentFilter(appointments)
 
-    assert type(event_range) == list
+    filtered_events = cached_api.get_events(datetime_range, date_filter=appointment_filter, city=query_params["city"])
 
-    start_date = parse(datetime_range[0])
-    end_date = parse(datetime_range[1])
+    assert type(filtered_events) == list
 
-    events = api.get_events((start_date, end_date))
+    events = cached_api.get_events(datetime_range, city=query_params["city"])
 
-    assert len(events) >= len(event_range)
+    assert len(events) >= len(filtered_events)

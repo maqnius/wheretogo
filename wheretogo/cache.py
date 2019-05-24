@@ -84,7 +84,7 @@ class Cache:
         raise NotImplementedError
 
 
-class SimpleCache(Cache):
+class DictionaryCache(Cache):
     """
     Implementation of :class:`Cache`.
 
