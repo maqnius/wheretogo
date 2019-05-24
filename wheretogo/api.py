@@ -4,6 +4,7 @@ This module contains classes that allow to get free events from an api during a 
 """
 import logging
 import os
+import datetime
 from dateutil.parser import parse
 import requests
 
@@ -11,6 +12,15 @@ logger = logging.getLogger(__name__)
 
 
 class Api:
+    """
+    Abstract class for getting events during in a specific date range
+    from *some external source* (cached) and filtering them.
+
+    .. important::
+        All implementation of these must overwrite the :meth:`._request_get_events`
+        method which does the actual data fetch from the external source.
+
+    """
     def __init__(self, cache=None):
         self._cache = cache
 
@@ -66,18 +76,40 @@ class Api:
         params = ["{}={}".format(name, value) for name, value in kwargs.items()]
         return (start_date, end_date, *args, *params)
 
-    def _request_get_events(self, start_date, end_date, *args, **kwargs):
+    def _request_get_events(self, start_date: datetime.datetime, end_date: datetime.datetime, *args, **kwargs):
+        """
+        This method needs to filled with live by all implementations of this Api.
+
+        It gets called whenever a list of events in a time-period defined by
+        start_date and end_date is not found in the cache.
+
+        What it returns depends on how you want to use the data later and is
+        for example restricted by the filter functions (see :mod:`wheretogo.datefilter`that might be applied
+        on them.)
+
+        .. important::
+            It gets called with all the parameters that the public function :meth:`.get_events` got called.
+
+        :param start_date: All Events must happen past this date
+        :param end_date:  All Events must happen before this date
+        :return:
+        """
         raise NotImplementedError
 
 
 class TicketmasterApi(Api):
+    """
+    This accesses the ticketmaster.com api to fetch events
+
+    """
     base_url = "https://app.ticketmaster.com/discovery/v2/"
 
     def __init__(self, api_key, cache=None):
         super().__init__(cache)
         self.api_key = api_key
 
-    def _request_get_events(self, start_date, end_date, *args, **kwargs) -> list:
+    def _request_get_events(self, start_date, end_date, *args, **kwargs):
+        """See :meth:`.api._requests_get_events`. """
         params = kwargs
         params["apikey"] = self.api_key
 

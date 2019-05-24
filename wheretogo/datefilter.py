@@ -102,7 +102,9 @@ class TicketmasterAppointmentFilter(FilterFunction):
         return False
 
     def _extract_date_rage(self, event_date: dict) -> (datetime.datetime, datetime.datetime):
+        """Creates a (start_date, end_date) tuple from the event's date information"""
         start_event = self._extract_date(event_date["start"], event_date.get("timezone", ""))
+
         try:
             end_event = self._extract_date(event_date["end"], event_date.get("timezone", ""))
         except KeyError:
