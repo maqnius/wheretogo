@@ -7,24 +7,26 @@ method.
 import datetime
 import logging
 import pytz
+from abc import ABC, abstractmethod
 from dateutil.parser import parse
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
-class FilterFunction:
+class FilterFunction(ABC):
     """FilterFunction base class"""
 
     def __call__(self, events: [dict], *args, **kwargs) -> [dict]:
         return [e for e in events if self._filter(e)]
 
+    @abstractmethod
     def _filter(self, event):
         """
         :param event:
         :return: True if event gets past the filter, False else
         """
-        raise NotImplementedError
+        pass
 
 
 class TicketmasterAppointmentFilter(FilterFunction):

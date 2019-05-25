@@ -5,17 +5,8 @@ from wheretogo.cache import DictionaryCache, Cache
 
 
 def test_cache_class():
-    cache = Cache()
-
-    with pytest.raises(NotImplementedError):
-        foo = cache._get("foo")
-
-    with pytest.raises(NotImplementedError):
-        foo = cache._set("foo", "bar", time.time())
-
-    with pytest.raises(NotImplementedError):
-        foo = cache._del("foo")
-
+    with pytest.raises(TypeError):
+        cache = Cache()
 
 
 def test_cache_w_timeout():

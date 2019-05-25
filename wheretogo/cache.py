@@ -4,9 +4,10 @@ defined in :mod:`wheretogo.api` to cache api requests.
 
 """
 import time
+from abc import ABC, abstractmethod
 
 
-class Cache:
+class Cache(ABC):
     """
     Represents a simple cache class.
 
@@ -51,6 +52,7 @@ class Cache:
     def __setitem__(self, key, value) -> None:
         self._set(key, value, time.time())
 
+    @abstractmethod
     def _del(self, item) -> None:
         """
         Deletion of an item
@@ -58,8 +60,9 @@ class Cache:
         :param item: key
         :return: None
         """
-        raise NotImplementedError
+        pass
 
+    @abstractmethod
     def _get(self, item):
         """
         Get a value and timestamp. If the item is not stored in the cache,
@@ -70,8 +73,9 @@ class Cache:
         :return: Tuple (value, timestamp) containing the cached value or the timestapm
         :rtype: (value, POSIX timestamp)
         """
-        raise NotImplementedError
+        pass
 
+    @abstractmethod
     def _set(self, item, value, timestamp):
         """
         Saves a item-value pair into the cache as well as the timestamp when
@@ -81,7 +85,7 @@ class Cache:
         :param value: Value to be cached
         :param timestamp: POSIX-Timestamp when the value has been saved to cached
         """
-        raise NotImplementedError
+        pass
 
 
 class DictionaryCache(Cache):

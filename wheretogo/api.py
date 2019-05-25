@@ -5,13 +5,14 @@ This module contains classes that allow to get free events from an api during a 
 import logging
 import os
 import datetime
-from dateutil.parser import parse
 import requests
+from abc import ABC, abstractmethod
+from dateutil.parser import parse
 
 logger = logging.getLogger(__name__)
 
 
-class Api:
+class Api(ABC):
     """
     Abstract class for getting events during in a specific date range
     from *some external source* (cached) and filtering them.
@@ -21,6 +22,7 @@ class Api:
         method which does the actual data fetch from the external source.
 
     """
+
     def __init__(self, cache=None):
         self._cache = cache
 
@@ -76,6 +78,7 @@ class Api:
         params = ["{}={}".format(name, value) for name, value in kwargs.items()]
         return (start_date.isoformat(), end_date.isoformat(), *args, *params)
 
+    @abstractmethod
     def _request_get_events(self, start_date: datetime.datetime, end_date: datetime.datetime, *args, **kwargs):
         """
         This method needs to filled with live by all implementations of this Api.
@@ -94,7 +97,7 @@ class Api:
         :param end_date:  All Events must happen before this date
         :return:
         """
-        raise NotImplementedError
+        pass
 
 
 class TicketmasterApi(Api):

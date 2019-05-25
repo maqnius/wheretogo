@@ -57,10 +57,8 @@ test_events = [
 
 
 def test_filter_class():
-    f = FilterFunction()
-
-    with pytest.raises(NotImplementedError):
-        f._filter({})
+    with pytest.raises(TypeError):
+        f = FilterFunction()
 
 
 def test_extract_time():
