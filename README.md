@@ -64,14 +64,14 @@ passed on to this function.
 You maybe also want to overwrite the `_generate_cache_key(start_date, end_date, *args, **kwargs)` method
 depending on your caching technique (see next class). It gets called to create the lookup key for the cache.
 
-#### Cache Class `wheretogo.api.Cache`
+#### Cache Class `wheretogo.cache.Cache`
 An abstract class that acts as an adapter to your caching implementation. It works
 like a key-value storage. The methods for writing, reading and deleting data need to be implemented the
 caching logic is abstracted in the `Cache` class.
 
 Take a look at `wheretogo.api.Cache.DictionaryCache` as an example.
 
-#### FilterFunction Class `wheretogo.api.FilterFunction`
+#### FilterFunction Class `wheretogo.datefilter.FilterFunction`
 Implement this class by overwriting the `_filter` function in order to apply filter 
 to the returns of your api. It's function `_filter` gets called on every event.
 
