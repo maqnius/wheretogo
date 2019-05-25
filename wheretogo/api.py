@@ -6,10 +6,16 @@ import logging
 import os
 import datetime
 import requests
+from typing import Tuple, Callable, Union, List, Any
 from abc import ABC, abstractmethod
 from dateutil.parser import parse
+from .cache import Cache, itemType
+from .utils import datesType, eventType
 
 logger = logging.getLogger(__name__)
+
+filterType = Union[Callable, List[Callable]]
+datetimeType = datetime.datetime
 
 
 class Api(ABC):
@@ -23,20 +29,17 @@ class Api(ABC):
 
     """
 
-    def __init__(self, cache=None):
+    def __init__(self, cache: Cache = None):
         self._cache = cache
 
-    def get_events(self, date_range, date_filter=None, *args, **kwargs) -> list:
+    def get_events(self, date_range: Tuple[datesType, datesType], date_filter: filterType = None, *args,
+                   **kwargs) -> List[eventType]:
         """
         Return list of Events during a period using cached requests
 
         :param date_range: Only events after this date
-        :type date_range: (str|datetime.datetime, str|datetime.datetime)
         :param date_filter: List of filter functions or a single filter function that are applied on the query result
-        :type date_filter: [:class:`wheretogo.datefilter.FilterFunction`]
-            | :class:`wheretogo.datefilter.FilterFunction`
         :return: Events
-        :rtype: list
         """
         date_filter = date_filter or []
         if type(date_filter) is not list:
@@ -67,19 +70,20 @@ class Api(ABC):
         return self._apply_filter(events, date_filter, *args, **kwargs)
 
     @staticmethod
-    def _apply_filter(events, date_filter, *args, **kwargs):
+    def _apply_filter(events: List[eventType], date_filter: filterType, *args, **kwargs) -> List[eventType]:
         for f in date_filter:
             events = f(events, *args, **kwargs)
 
         return events
 
     @staticmethod
-    def _generate_cache_key(start_date, end_date, *args, **kwargs):
+    def _generate_cache_key(start_date: datetimeType, end_date: datetimeType, *args, **kwargs) -> itemType:
         params = ["{}={}".format(name, value) for name, value in kwargs.items()]
         return (start_date.isoformat(), end_date.isoformat(), *args, *params)
 
     @abstractmethod
-    def _request_get_events(self, start_date: datetime.datetime, end_date: datetime.datetime, *args, **kwargs):
+    def _request_get_events(self, start_date: datetimeType, end_date: datetimeType, *args,
+                            **kwargs) -> List[eventType]:
         """
         This method needs to filled with live by all implementations of this Api.
 
@@ -97,7 +101,6 @@ class Api(ABC):
         :param end_date:  All Events must happen before this date
         :return:
         """
-        pass
 
 
 class TicketmasterApi(Api):
@@ -107,11 +110,11 @@ class TicketmasterApi(Api):
     """
     base_url = "https://app.ticketmaster.com/discovery/v2/"
 
-    def __init__(self, api_key, cache=None):
+    def __init__(self, api_key: str, cache: Cache = None):
         super().__init__(cache)
         self.api_key = api_key
 
-    def _request_get_events(self, start_date, end_date, *args, **kwargs):
+    def _request_get_events(self, start_date: datetimeType, end_date: datetimeType, *args, **kwargs):
         """
         See :meth:`.api._requests_get_events`.
 
@@ -130,12 +133,11 @@ class TicketmasterApi(Api):
         return self._extract_names(r)
 
     @staticmethod
-    def _extract_names(res) -> list:
+    def _extract_names(res: dict) -> list:
         """
         Extracts event names from the json body of a Ticketmaster Api response
 
         :return: List of events
-        :rtype: list
         """
         try:
             return res["_embedded"]["events"]

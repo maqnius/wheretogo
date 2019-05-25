@@ -7,8 +7,10 @@ method.
 import datetime
 import logging
 import pytz
+from typing import Tuple, List
 from abc import ABC, abstractmethod
 from dateutil.parser import parse
+from .utils import eventType, datesType
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -17,16 +19,15 @@ logger.setLevel(logging.DEBUG)
 class FilterFunction(ABC):
     """FilterFunction base class"""
 
-    def __call__(self, events: [dict], *args, **kwargs) -> [dict]:
+    def __call__(self, events: List[eventType], *args, **kwargs) -> List[eventType]:
         return [e for e in events if self._filter(e)]
 
     @abstractmethod
-    def _filter(self, event):
+    def _filter(self, event: eventType) -> bool:
         """
         :param event:
         :return: True if event gets past the filter, False else
         """
-        pass
 
 
 class TicketmasterAppointmentFilter(FilterFunction):
@@ -38,7 +39,7 @@ class TicketmasterAppointmentFilter(FilterFunction):
 
     """
 
-    def __init__(self, appointments: [tuple]):
+    def __init__(self, appointments: List[Tuple[datesType, datesType]]):
         """
 
         :param appointments: List of appointments given as a tuple (start-date, end-date)
@@ -56,7 +57,7 @@ class TicketmasterAppointmentFilter(FilterFunction):
 
             self.appointments.append((start, end))
 
-    def _filter(self, event: dict) -> bool:
+    def _filter(self, event: eventType) -> bool:
         """
         Checks if a single event does not overlap with any of the appointments
 
@@ -100,7 +101,7 @@ class TicketmasterAppointmentFilter(FilterFunction):
 
         return True
 
-    def _extract_date_rage(self, event_date: dict) -> (datetime.datetime, datetime.datetime):
+    def _extract_date_rage(self, event_date: eventType) -> Tuple[datetime.datetime, datetime.datetime]:
         """Creates a (start_date, end_date) tuple from the event's date information"""
         start_event = self._extract_date(event_date["start"], event_date.get("timezone", ""))
 
@@ -112,7 +113,7 @@ class TicketmasterAppointmentFilter(FilterFunction):
         return start_event, end_event
 
     @staticmethod
-    def _extract_date(event_date: dict, timezone: str) -> datetime.datetime:
+    def _extract_date(event_date: eventType, timezone: str) -> datetime.datetime:
         """
         Evaluates an Ticketmaster Event date field.
         If this is not possible, a ValueError is raised.

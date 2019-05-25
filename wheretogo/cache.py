@@ -4,7 +4,11 @@ defined in :mod:`wheretogo.api` to cache api requests.
 
 """
 import time
+from typing import TypeVar, Tuple
 from abc import ABC, abstractmethod
+
+itemType = TypeVar("itemType")
+valueType = TypeVar("valueType")
 
 
 class Cache(ABC):
@@ -26,7 +30,7 @@ class Cache(ABC):
         """
         self.timeout = timeout
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: itemType) -> valueType:
         """
         Returns a cached value if it is in the cache
         and not older as :attr:`self.timeout`.
@@ -49,34 +53,31 @@ class Cache(ABC):
                 self._del(item)
                 raise KeyError()
 
-    def __setitem__(self, key, value) -> None:
+    def __setitem__(self, key: itemType, value: valueType) -> None:
         self._set(key, value, time.time())
 
     @abstractmethod
-    def _del(self, item) -> None:
+    def _del(self, item: itemType) -> None:
         """
         Deletion of an item
 
         :param item: key
         :return: None
         """
-        pass
 
     @abstractmethod
-    def _get(self, item):
+    def _get(self, item: itemType) -> Tuple[valueType, float]:
         """
         Get a value and timestamp. If the item is not stored in the cache,
         a KeyError must be raised.
 
         :raises KeyError:
         :param item: The cache key
-        :return: Tuple (value, timestamp) containing the cached value or the timestapm
-        :rtype: (value, POSIX timestamp)
+        :return: Tuple (value, timestamp) containing the cached value or the timestamp
         """
-        pass
 
     @abstractmethod
-    def _set(self, item, value, timestamp):
+    def _set(self, item: itemType, value: valueType, timestamp: float):
         """
         Saves a item-value pair into the cache as well as the timestamp when
         this did happen.
@@ -85,7 +86,6 @@ class Cache(ABC):
         :param value: Value to be cached
         :param timestamp: POSIX-Timestamp when the value has been saved to cached
         """
-        pass
 
 
 class DictionaryCache(Cache):

@@ -10,8 +10,10 @@ from wheretogo.cache import DictionaryCache
 ROOT_URL = "https://app.ticketmaster.com/discovery/v2/"
 today = datetime.datetime.today()
 tomorrow = today + datetime.timedelta(days=1)
+yesterday = today - datetime.timedelta(days=1)
 
 datetime_range = (today.isoformat(timespec="seconds") + "Z", tomorrow.isoformat(timespec="seconds") + "Z")
+invalid_datetime_range = (yesterday.isoformat(timespec="seconds") + "Z", today.isoformat(timespec="seconds") + "Z")
 appointments = [('2019-05-22T12:00:00Z', '2019-05-22T14:00:00Z'), ('2019-05-22T19:00:00Z', '2019-05-22T21:00:00Z')]
 query_params = {"city": ["Berlin"], "apikey": API_KEY}
 
@@ -54,6 +56,10 @@ def test_get_events(api):
 
     assert type(events) == list
     assert len(events) > 0
+
+    events = api.get_events(invalid_datetime_range, city=query_params["city"])
+
+    assert len(events) == 0
 
 
 def test_get_event_range(cached_api):
