@@ -7,6 +7,9 @@ from wheretogo.api import TicketmasterApi
 from wheretogo.datefilter import TicketmasterAppointmentFilter
 from wheretogo.cache import DictionaryCache
 
+if "apikey" in os.environ:
+    API_KEY = os.environ["apikey"]
+
 ROOT_URL = "https://app.ticketmaster.com/discovery/v2/"
 today = datetime.datetime.today()
 tomorrow = today + datetime.timedelta(days=1)
