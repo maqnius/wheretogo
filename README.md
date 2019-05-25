@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/maqnius/wheretogo.svg?branch=master)](https://travis-ci.org/maqnius/wheretogo)
+
 # WhereToGo?
 WhereToGo is a simple example package, that allows to fetch event informations
 from an api (ticketmaster.com api is given as example) and to process it further 
