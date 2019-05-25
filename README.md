@@ -1,22 +1,12 @@
 # WhereToGo?
-## Motiviation
-I recently moved to Berlin for a new job and I would like to attend as many events as possible to get to know people, so I decided, as a developer, to write an application that checks which events are happening in Berlin during my free time and suggest them.
+WhereToGo is a simple example package, that allows to fetch event informations
+from an api (ticketmaster.com api is given as example) and to process it further 
+via filter functions. This way, one can for example filter the events by some 
+given appointments.
 
 ## Installation
 ```python
 python setup.py install
-```
-
-### Tests
-Tests are done using `pytest`. To install pytest
-you have to install the developer dependencies via:
-```python
-pipenv install --dev
-```
-
-Afterwards you can run the tests via:
-```python
-python -m pytest tests/
 ```
 
 ## Usage
@@ -49,10 +39,17 @@ for event in events:
 ```
 
 ## Developer Interface
+Install all necessary dependencies via
+
+```python
+pipenv install --dev
+```
+
 The main function that this packages provides to the outer world is `Api.get_events`, which
 fetches and filters events.
 
-The package provides necessary abstractions to be of general use whenever events are fetched from an api.
+The package provides necessary abstractions to be of general use whenever events are fetched from an api
+and afterwards manipulated.
 
 It mainly consists of three parts as can be seen in the minimal example.
 
@@ -65,14 +62,27 @@ All parameters that are passed to `wheretogo.api.Api.get_events` (except `date_f
 passed on to this function.
 
 You maybe also want to overwrite the `_generate_cache_key(start_date, end_date, *args, **kwargs)` method
-depending on your caching technique (see next class).
+depending on your caching technique (see next class). It gets called to create the lookup key for the cache.
 
 #### Cache Class `wheretogo.api.Cache`
 An abstract class that acts as an adapter to your caching implementation. It works
-like a key-value storage. The methods for writing, reading and deleting data need to be implemented.
+like a key-value storage. The methods for writing, reading and deleting data need to be implemented the
+caching logic is abstracted in the `Cache` class.
 
 Take a look at `wheretogo.api.Cache.DictionaryCache` as an example.
 
 #### FilterFunction Class `wheretogo.api.FilterFunction`
 Implement this class by overwriting the `_filter` function in order to apply filter 
 to the returns of your api. It's function `_filter` gets called on every event.
+
+You can further use any other callable as a date_filter function.
+
+### Tests
+Tests are done using `pytest`.
+
+You can run the tests via:
+
+```python
+python -m pytest tests/
+```
+
