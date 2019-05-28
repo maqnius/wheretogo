@@ -32,8 +32,13 @@ class Api(ABC):
     def __init__(self, cache: Cache = None):
         self._cache = cache
 
-    def get_events(self, date_range: Tuple[datesType, datesType], date_filter: filterType = None, *args,
-                   **kwargs) -> List[eventType]:
+    def get_events(
+        self,
+        date_range: Tuple[datesType, datesType],
+        date_filter: filterType = None,
+        *args,
+        **kwargs
+    ) -> List[eventType]:
         """
         Return list of Events during a period using cached requests
 
@@ -63,27 +68,34 @@ class Api(ABC):
                 events = self._cache[key]
                 logger.debug("Got events from cache")
             except KeyError:
-                logger.debug("Making a request because cache does not hold request data")
+                logger.debug(
+                    "Making a request because cache does not hold request data"
+                )
                 events = self._request_get_events(start_date, end_date, *args, **kwargs)
                 self._cache[key] = events
 
         return self._apply_filter(events, date_filter, *args, **kwargs)
 
     @staticmethod
-    def _apply_filter(events: List[eventType], date_filter: filterType, *args, **kwargs) -> List[eventType]:
+    def _apply_filter(
+        events: List[eventType], date_filter: filterType, *args, **kwargs
+    ) -> List[eventType]:
         for f in date_filter:
             events = f(events, *args, **kwargs)
 
         return events
 
     @staticmethod
-    def _generate_cache_key(start_date: datetimeType, end_date: datetimeType, *args, **kwargs) -> itemType:
+    def _generate_cache_key(
+        start_date: datetimeType, end_date: datetimeType, *args, **kwargs
+    ) -> itemType:
         params = ["{}={}".format(name, value) for name, value in kwargs.items()]
         return (start_date.isoformat(), end_date.isoformat(), *args, *params)
 
     @abstractmethod
-    def _request_get_events(self, start_date: datetimeType, end_date: datetimeType, *args,
-                            **kwargs) -> List[eventType]:
+    def _request_get_events(
+        self, start_date: datetimeType, end_date: datetimeType, *args, **kwargs
+    ) -> List[eventType]:
         """
         This method needs to filled with live by all implementations of this Api.
 
@@ -108,13 +120,16 @@ class TicketmasterApi(Api):
     This accesses the ticketmaster.com api to fetch events
 
     """
+
     base_url = "https://app.ticketmaster.com/discovery/v2/"
 
     def __init__(self, api_key: str, cache: Cache = None):
         super().__init__(cache)
         self.api_key = api_key
 
-    def _request_get_events(self, start_date: datetimeType, end_date: datetimeType, *args, **kwargs):
+    def _request_get_events(
+        self, start_date: datetimeType, end_date: datetimeType, *args, **kwargs
+    ):
         """
         See :meth:`.api._requests_get_events`.
 
@@ -126,7 +141,7 @@ class TicketmasterApi(Api):
         params["startDateTime"] = start_date.isoformat(timespec="seconds")
         params["endDateTime"] = end_date.isoformat(timespec="seconds")
 
-        r = requests.get(os.path.join(self.base_url, 'events.json'), params=params)
+        r = requests.get(os.path.join(self.base_url, "events.json"), params=params)
         r.raise_for_status()
         r = r.json()
 

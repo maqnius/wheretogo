@@ -101,12 +101,18 @@ class TicketmasterAppointmentFilter(FilterFunction):
 
         return True
 
-    def _extract_date_rage(self, event_date: eventType) -> Tuple[datetime.datetime, datetime.datetime]:
+    def _extract_date_rage(
+        self, event_date: eventType
+    ) -> Tuple[datetime.datetime, datetime.datetime]:
         """Creates a (start_date, end_date) tuple from the event's date information"""
-        start_event = self._extract_date(event_date["start"], event_date.get("timezone", ""))
+        start_event = self._extract_date(
+            event_date["start"], event_date.get("timezone", "")
+        )
 
         try:
-            end_event = self._extract_date(event_date["end"], event_date.get("timezone", ""))
+            end_event = self._extract_date(
+                event_date["end"], event_date.get("timezone", "")
+            )
         except KeyError:
             end_event = None
 
@@ -142,4 +148,6 @@ class TicketmasterAppointmentFilter(FilterFunction):
             except pytz.UnknownTimeZoneError:
                 pass
 
-        raise ValueError("Could not extract time from {}".format(event_date))  # Could not Extract
+        raise ValueError(
+            "Could not extract time from {}".format(event_date)
+        )  # Could not Extract
